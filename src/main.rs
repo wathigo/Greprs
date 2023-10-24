@@ -2,6 +2,7 @@ use std::env;
 use std::fs::File;
 use std::io::prelude::*;
 use std::process;
+use std::error::Error;
 
 struct Config {
     search_query: String,
@@ -20,6 +21,19 @@ impl Config {
     }
 }
 
+fn run(config: Config) -> Result<(), Box<dyn Error>> {
+    println!("Search query `{}`", config.search_query);
+    println!("In file `{}`", config.file_name);
+
+    let mut f = File::open(&config.file_name)?;
+
+    let mut content = String::new();
+    f.read_to_string(&mut content)?;
+
+    println!("File {} Contains \n{}",config.file_name, content);
+    Ok(())
+}
+
 fn main() {
     let arguments: Vec<String> = env::args().collect();
 
@@ -27,13 +41,9 @@ fn main() {
         println!("Program stopped with error: \n{}", err);
         process::exit(1);
     });
-    println!("Search query `{}`", config.search_query);
-    println!("In file `{}`", config.file_name);
-
-    let mut f = File::open(&config.file_name).expect("Couldn't open file!");
-
-    let mut content = String::new();
-    f.read_to_string(&mut content).expect("Couldn't read file contents!");
-
-    println!("File {} Contains \n{}",config.file_name, content);
+    
+    if let Err(e) = run(config) {
+        println!("Application stopped!\n{}", e);
+        process::exit(1);
+    };
 }
