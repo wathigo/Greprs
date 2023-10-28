@@ -28,6 +28,42 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let mut content = String::new();
     f.read_to_string(&mut content)?;
 
-    println!("File {} Contains \n{}",config.file_name, content);
+    for line in search(&config.search_query, &content) {
+        println!("{}", line);
+    }
     Ok(())
 }
+
+pub fn search<'a>(query: &str, content: &'a str) -> Vec<&'a str> {
+    let query = query.to_lowercase();
+    let mut results =  Vec::new();
+
+    for line in content.lines() {
+        if line.to_lowercase().contains(&query) {
+            results.push(line);
+        }
+    }
+
+    results
+}
+
+#[cfg(test)]
+    mod test {
+        use super::*;
+
+        #[test]
+        fn one_result() {
+            let query = "duct";
+            let content = "\
+Rust:
+safe, fast, productive.
+Pick three.";
+
+
+            assert_eq!(
+                vec!["safe, fast, productive."],
+                search(query, content)
+            );
+        }
+    }
+
